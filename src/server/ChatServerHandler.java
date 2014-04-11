@@ -1,5 +1,8 @@
 package server;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.channel.group.DefaultChannelGroup;
 import api.Handler;
@@ -8,7 +11,7 @@ import api.UserGroup;
 
 public class ChatServerHandler extends Handler{
 
-    static final UserGroup users = new UserGroup(new DefaultChannelGroup(GlobalEventExecutor.INSTANCE));
+    static final List<User> users = new ArrayList<User>();
     
     @Override
     public void userConnected(User user){
@@ -19,8 +22,10 @@ public class ChatServerHandler extends Handler{
     @Override
     public void userDisconnected(User user){
         if(users.contains(user)){
-           users.remove(user);
-            broadcastChatMessage("Server", user.getAddress() + " left");
+            String address = user.getAddress();
+            users.remove(user);
+            user.disconnect();
+            broadcastChatMessage("Server", address + " left");
         }else{
             System.out.println("User not in users");
         }
@@ -33,6 +38,8 @@ public class ChatServerHandler extends Handler{
     
     
     public void broadcastChatMessage(String user, String msg){
-        users.writeChatMessage(user, msg);
+        for(User u : users){
+            u.writeChat(user, msg);
+        }
     }
 }

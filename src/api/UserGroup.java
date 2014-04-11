@@ -34,7 +34,7 @@ public class UserGroup{
     
     public void writeChatMessage(String user, String msg){
         for(Channel c: group){
-            User u = new User(c);
+            User u = User.getInstance(c);
             u.writeChat(user, msg);
         }
     }

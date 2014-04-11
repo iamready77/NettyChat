@@ -14,7 +14,7 @@ public class Handler extends ChannelInboundHandlerAdapter{
             Message m = (Message) msg;
             if(m instanceof ClientChatMessage){
                 ClientChatMessage n = (ClientChatMessage) m;
-                clientChatMessage(new User(ctx), n.getMsg());
+                clientChatMessage(User.getInstance(ctx), n.getMsg());
             }else if(m instanceof ServerChatMessage){
                 ServerChatMessage n = (ServerChatMessage) m;
                 serverChatMessage(n.getUser(), n.getMsg());
@@ -28,13 +28,13 @@ public class Handler extends ChannelInboundHandlerAdapter{
     
     @Override
     public void channelActive(final ChannelHandlerContext ctx) {
-        userConnected(new User(ctx));
+        userConnected(User.getInstance(ctx));
     }
     public void userConnected(User user){}
     
     @Override
     public void channelInactive(final ChannelHandlerContext ctx) {
-        userDisconnected(new User(ctx));
+        userDisconnected(User.getInstance(ctx));
     }
     public void userDisconnected(User user){}
     
