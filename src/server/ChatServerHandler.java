@@ -3,11 +3,8 @@ package server;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.netty.util.concurrent.GlobalEventExecutor;
-import io.netty.channel.group.DefaultChannelGroup;
 import api.Handler;
 import api.User;
-import api.UserGroup;
 
 public class ChatServerHandler extends Handler{
 
@@ -15,17 +12,15 @@ public class ChatServerHandler extends Handler{
     
     @Override
     public void userConnected(User user){
-        users.add(user);
-        broadcastChatMessage("Server", user.getAddress() + " joined");
+        user.writeChat("Server", "Please enter a username:");
     }
     
     @Override
     public void userDisconnected(User user){
         if(users.contains(user)){
-            String address = user.getAddress();
             users.remove(user);
             user.disconnect();
-            broadcastChatMessage("Server", address + " left");
+            broadcastMessage(user.getUsername() + " left");
         }else{
             System.out.println("User not in users");
         }
@@ -33,13 +28,31 @@ public class ChatServerHandler extends Handler{
     
     @Override
     public void clientChatMessage(User user, String msg){
-        broadcastChatMessage(user.getAddress(), msg);
+        if(user.getUsername()==null){
+            if(msg.contains(" ")){
+                user.writeServerMessage("Usernames can't contain spaces!");
+            }else if(msg == null || msg.length()==0 || msg.length()>11){
+                user.writeServerMessage("Usernames must be less than 11 characters long!");
+            }else{
+                user.setUsername(msg);
+                users.add(user);
+                broadcastMessage(user.getUsername() + " joined");
+            }
+        }else{
+            broadcastChatMessage(user, msg);
+        }
     }
     
     
-    public void broadcastChatMessage(String user, String msg){
+    public void broadcastChatMessage(User user, String msg){
         for(User u : users){
             u.writeChat(user, msg);
+        }
+    }
+    
+    public void broadcastMessage(String msg){
+        for(User u : users){
+            u.writeServerMessage(msg);
         }
     }
 }
